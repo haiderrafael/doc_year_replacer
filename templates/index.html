@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuYear Replacer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="blob-shape shape-1"></div>
+    <div class="blob-shape shape-2"></div>
+    
+    <main class="glass-container">
+        <header>
+            <h1>Modificador de Años en Documentos</h1>
+            <p>Reemplaza fácilmente años en tus archivos <b>.docx</b> y <b>.pdf</b></p>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+            <div class="file-upload-wrapper">
+                <input type="file" id="file" name="file" accept=".docx,.pdf" required class="file-input">
+                <label for="file" class="file-label">
+                    <svg class="upload-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    <span id="file-name">Seleccionar archivo (.docx o .pdf)</span>
+                </label>
+            </div>
+
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="old_year">Año a Buscar (Ej. 2024)</label>
+                    <input type="text" id="old_year" name="old_year" placeholder="2024" required>
+                </div>
+                
+                <div class="input-field">
+                    <label for="new_year">Nuevo Año (Ej. 2026)</label>
+                    <input type="text" id="new_year" name="new_year" placeholder="2026" required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Procesar Documento</button>
+        </form>
+        
+        <div class="disclaimer">
+            Nota: Al editar documentos PDF, el formato puede sufrir pequeños cambios. Los archivos Word (.docx) mantendrán su formato intacto.
+        </div>
+    </main>
+
+    <script>
+        // Update file name when selected
+        const fileInput = document.getElementById('file');
+        const fileNameSpan = document.getElementById('file-name');
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                fileNameSpan.textContent = e.target.files[0].name;
+                fileNameSpan.style.color = 'var(--text-dark)';
+            } else {
+                fileNameSpan.textContent = 'Seleccionar archivo (.docx o .pdf)';
+                fileNameSpan.style.color = 'var(--text-light)';
+            }
+        });
+    </script>
+</body>
+</html>
