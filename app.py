@@ -81,10 +81,5 @@ def upload_file():
                 zipf.write(filepath, arcname=filename)
                 
         return send_file(zip_filepath, as_attachment=True, download_name=zip_filename)
-            
-    else:
-        flash('Allowed file types are docx, pdf')
-        return redirect(url_for('index'))
-
 if __name__ == '__main__':
     app.run(debug=True)
