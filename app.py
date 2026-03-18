@@ -29,13 +29,9 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        flash('No file part')
-        return redirect(url_for('index'))
-    
-    file = request.files['file']
-    if file.filename == '':
-        flash('No selected file')
+    files = request.files.getlist('file')
+    if not files or all(f.filename == '' for f in files):
+        flash('No selected files')
         return redirect(url_for('index'))
     
     old_year = request.form.get('old_year')
@@ -45,27 +41,46 @@ def upload_file():
         flash('Please provide both the old year and the new year.')
         return redirect(url_for('index'))
         
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        output_filename = f"updated_{filename}"
-        output_filepath = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
-        
-        try:
-            # Process based on extension
-            ext = filename.rsplit('.', 1)[1].lower()
-            if ext == 'docx':
-                utils.replace_year_in_docx(filepath, output_filepath, old_year, new_year)
-            elif ext == 'pdf':
-                utils.replace_year_in_pdf(filepath, output_filepath, old_year, new_year)
-                
-            return send_file(output_filepath, as_attachment=True, download_name=output_filename)
+    processed_files = []
+    
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
             
-        except Exception as e:
-            flash(f'Error processing file: {str(e)}')
-            return redirect(url_for('index'))
+            output_filename = f"updated_{filename}"
+            output_filepath = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+            
+            try:
+                # Process based on extension
+                ext = filename.rsplit('.', 1)[1].lower()
+                if ext == 'docx':
+                    utils.replace_year_in_docx(filepath, output_filepath, old_year, new_year)
+                elif ext == 'pdf':
+                    utils.replace_year_in_pdf(filepath, output_filepath, old_year, new_year)
+                    
+                processed_files.append((output_filepath, output_filename))
+            except Exception as e:
+                flash(f'Error processing {filename}: {str(e)}')
+                
+    if not processed_files:
+        flash('No files were successfully processed.')
+        return redirect(url_for('index'))
+        
+    if len(processed_files) == 1:
+        return send_file(processed_files[0][0], as_attachment=True, download_name=processed_files[0][1])
+    else:
+        import zipfile
+        import time
+        zip_filename = f"updated_documents_{int(time.time())}.zip"
+        zip_filepath = os.path.join(app.config['OUTPUT_FOLDER'], zip_filename)
+        
+        with zipfile.ZipFile(zip_filepath, 'w') as zipf:
+            for filepath, filename in processed_files:
+                zipf.write(filepath, arcname=filename)
+                
+        return send_file(zip_filepath, as_attachment=True, download_name=zip_filename)
             
     else:
         flash('Allowed file types are docx, pdf')

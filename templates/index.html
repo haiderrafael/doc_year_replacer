@@ -14,8 +14,8 @@
     
     <main class="glass-container">
         <header>
-            <h1>Modificador de Años en Documentos</h1>
-            <p>Reemplaza fácilmente años en tus archivos <b>.docx</b> y <b>.pdf</b></p>
+            <h1>Modificador de Años en Documentos <span class="badge" style="background:#ff3366; color:white; font-size:14px; padding:4px 8px; border-radius:12px; vertical-align:middle; margin-left:10px;">PRO (Lotes)</span></h1>
+            <p>Reemplaza fácilmente años en <b>múltiples</b> archivos <b>.docx</b> y <b>.pdf</b> al mismo tiempo.</p>
         </header>
 
         {% with messages = get_flashed_messages() %}
@@ -30,10 +30,10 @@
 
         <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
             <div class="file-upload-wrapper">
-                <input type="file" id="file" name="file" accept=".docx,.pdf" required class="file-input">
+                <input type="file" id="file" name="file" accept=".docx,.pdf" required class="file-input" multiple>
                 <label for="file" class="file-label">
                     <svg class="upload-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                    <span id="file-name">Seleccionar archivo (.docx o .pdf)</span>
+                    <span id="file-name">Seleccionar archivo(s) (.docx o .pdf)</span>
                 </label>
             </div>
 
@@ -63,11 +63,14 @@
         const fileNameSpan = document.getElementById('file-name');
 
         fileInput.addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
+            if (e.target.files.length > 1) {
+                fileNameSpan.textContent = e.target.files.length + ' archivos seleccionados';
+                fileNameSpan.style.color = 'var(--text-dark)';
+            } else if (e.target.files.length === 1) {
                 fileNameSpan.textContent = e.target.files[0].name;
                 fileNameSpan.style.color = 'var(--text-dark)';
             } else {
-                fileNameSpan.textContent = 'Seleccionar archivo (.docx o .pdf)';
+                fileNameSpan.textContent = 'Seleccionar archivo(s) (.docx o .pdf)';
                 fileNameSpan.style.color = 'var(--text-light)';
             }
         });
